@@ -9,7 +9,7 @@ This repository is a **mechanism artifact**, not a production service and not a
 provenance system for real (large, GPU) training runs. It demonstrates the
 mechanism on a deliberately **deterministic toy run** (a 300-step, gradient-check-
 validated NumPy GPT) and **identifies exactly where the guarantee stops**. Every
-claim is tagged by evidence grade (see `SCOPE.md`).
+claim is tagged by evidence grade (see [`SCOPE.md`](SCOPE.md)).
 
 ## What it is (the working part)
 
@@ -50,8 +50,8 @@ point results depend on the hardware and math library that produced them. So:
   recomputation. **Cross-hardware re-derivation is UNTESTED and UNKNOWN here** — I
   have one machine and one BLAS. It is **not claimed, and not implied achievable.**
 
-That boundary is the contribution, not a failure. See `GAPS.md` (§3 especially)
-and `TCB.md`.
+That boundary is the contribution, not a failure. See [`GAPS.md`](GAPS.md)
+(§3 especially) and [`TCB.md`](TCB.md).
 
 ## Integrity ≠ correctness ≠ quality ≠ accountability
 
@@ -176,6 +176,8 @@ SCOPE.md  GAPS.md  TCB.md   the honesty documents — read these
 
 ## Files to read first
 
-**SCOPE.md** (claims tagged PROVEN / MEASURED / OBSERVED / NOT PROVEN),
-**GAPS.md** (what this establishes vs what it does not), **TCB.md** (what you must
-trust). The mechanism is the easy part; the boundary is the contribution.
+- [`SCOPE.md`](SCOPE.md) — claims tagged PROVEN / MEASURED / OBSERVED / NOT PROVEN.
+- [`GAPS.md`](GAPS.md) — what this establishes vs what it does not.
+- [`TCB.md`](TCB.md) — the trusted computing base per verdict.
+
+The mechanism is the easy part; the boundary is the contribution.
