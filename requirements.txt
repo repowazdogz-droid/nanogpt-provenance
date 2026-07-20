@@ -1,0 +1,3 @@
+# Only numpy is required. Pinned loosely; the EXACT numpy version used for a run
+# is captured in the provenance record's env segment and checked by the verifier.
+numpy>=2.0
