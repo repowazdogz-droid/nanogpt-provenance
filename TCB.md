@@ -57,8 +57,9 @@ Integrity ≠ correctness ≠ quality ≠ accountability.
 
 ## Scale and horizon
 
-The demonstration is a 300-step NumPy GPT that re-derives bit-for-bit on one
-deterministic machine. Cross-hardware re-derivation (a real GPU, a different BLAS)
-is **untested and UNKNOWN** — not claimed, not implied achievable. The training
+The demonstration is a 300-step NumPy GPT that re-derives bit-for-bit on two
+Apple Accelerate machines and diverges by one ulp from step 9 on an x86-64 OpenBLAS
+machine (GAPS.md §3, measured 2026-09-04, three CPU environments, single-threaded).
+Re-derivation on a real GPU or under multithreaded BLAS is **untested**. The training
 engine itself is trusted only as far as its finite-difference gradient check
 (`tests/gradcheck.py`, worst combined error 5.85e-07) reaches.

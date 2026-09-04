@@ -34,9 +34,10 @@ verifier re-runs the *same* code; it does not cross-check against a second,
 independent implementation of the model. A hidden nondeterminism in that code
 that happens to be stable on this machine would be reproduced, not caught.
 
-## 3. The GPU / cross-hardware boundary is UNKNOWN — and untested here
+## 3. The cross-hardware boundary: measured across three CPU environments, GPU untested
 
-The prompt anticipated GPU nondeterminism. What actually happened on this machine:
+The prompt anticipated GPU nondeterminism. What actually happened on the original
+machine:
 
 - NumPy is backed by **Apple Accelerate** BLAS. Matmuls (incl. 1024×1024) are
   **bit-identical across 1/8/16 threads and both float32/float64**. So I could
@@ -44,12 +45,37 @@ The prompt anticipated GPU nondeterminism. What actually happened on this machin
 - Consequently the training run re-derives **bit-for-bit** on this environment,
   and VERIFIED is a genuine bit-exact re-derivation.
 
-This means the real nondeterminism boundary — a different GPU, a different BLAS
-(e.g. multithreaded OpenBLAS with run-to-run reduction-order variation),
-different hardware or a different math library — is **NOT PROVEN and untested
-here**: I have one machine and one BLAS. The literature is clear that such
-differences change low-order bits; I did not reproduce it, so I do not claim it,
-and I equally do not claim reproduction is *achievable* across hardware.
+**Measured 2026-09-04 on three machines.** One `git archive` of this repository at
+commit `732da8b` (sha256 `47cd8402…`) was shipped to each machine; every arm ran
+Python 3.12 with NumPy 2.4.4 and `OPENBLAS/OMP/VECLIB/MKL_NUM_THREADS=1`, default
+config and seed. Predictions were written down before execution.
+
+| machine | ISA | BLAS | compute fingerprint | final val loss |
+|---|---|---|---|---|
+| Apple M4 Max, macOS | arm64 | Accelerate | `c6da865de1f953d9…` | `0x1.b39f0b7130106p-4` |
+| Apple M4 Pro, macOS | arm64 | Accelerate | `c6da865de1f953d9…` | `0x1.b39f0b7130106p-4` |
+| AMD Ryzen 9 9950X, Ubuntu on WSL2 | x86_64 | OpenBLAS (scipy-openblas wheel) | `eb15266bc203a608…` | `0x1.b39f0b713186ep-4` |
+
+- The two Accelerate machines re-derive each other **bit-for-bit**. The M4 Max
+  result is the same hex as the original 2026-07-20 record, so the run is also
+  stable across six weeks and a Python 3.14 to 3.12 change.
+- The OpenBLAS machine **diverges at training step 9 by 4.44e-16** (one ulp at a
+  loss of 2.73) and ends 8.3e-14 away on the final validation loss. The divergence
+  is deterministic: the OpenBLAS fingerprint reproduced itself exactly in a second
+  run 72 seconds later.
+- Every machine verified every record (nine cells). Diagonal: VERIFIED. Accelerate
+  verifying Accelerate: VERIFIED, with an environment-fingerprint delta reported.
+  Every Accelerate/OpenBLAS cell, in both directions: **UNKNOWN**. A record whose
+  final loss was edited after shipping: TAMPERED. The 12 negative controls were
+  re-run in the same pipeline and all caught.
+
+What this does and does not establish. It establishes that on this toy run a
+change of BLAS library changes low-order bits from step 9 onward, and that the
+verifier lands on UNKNOWN rather than VERIFIED or TAMPERED when it cannot
+attribute the mismatch. It covers three environments, one seed, one config,
+float64, single-threaded CPU. It says nothing about GPUs, about multithreaded
+BLAS, or about other seeds and configs. I still do not claim reproduction is
+*achievable* across BLAS libraries; the measurement says it did not happen here.
 
 The verifier's design is honest about this: when its numeric-environment
 fingerprint differs from the record's, a re-derivation **mismatch** yields
@@ -57,8 +83,9 @@ fingerprint differs from the record's, a re-derivation **mismatch** yields
 environment. A key consequence: **tamper-detection by re-derivation requires a
 matching numeric environment.** Under an unverifiable/foreign environment, even a
 genuine forgery of the loss can only be reported as UNKNOWN (demonstrated by the
-"forged loss under foreign env" control). Detection power degrades exactly where
-reproducibility does.
+"forged loss under foreign env" control, and observed for real in the six
+cross-BLAS cells above). Detection power degrades exactly where reproducibility
+does.
 
 ## 4. What "same environment" is trusted to mean
 

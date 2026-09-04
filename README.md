@@ -44,11 +44,20 @@ point results depend on the hardware and math library that produced them. So:
 - The **real-world GPU case is precisely this nondeterministic case.** GPU kernels,
   and multithreaded BLAS libraries generally, do not guarantee bit-identical
   reductions run to run or across hardware.
-- Therefore the mechanism is demonstrated on a **deterministic toy run**. On this
-  machine NumPy is backed by Apple Accelerate, which turned out to be bit-identical
-  across 1/8/16 threads, so the run re-derives exactly and VERIFIED is a genuine
-  recomputation. **Cross-hardware re-derivation is UNTESTED and UNKNOWN here** — I
-  have one machine and one BLAS. It is **not claimed, and not implied achievable.**
+- Therefore the mechanism is demonstrated on a **deterministic toy run**. On the
+  original machine NumPy is backed by Apple Accelerate, which turned out to be
+  bit-identical across 1/8/16 threads, so the run re-derives exactly and VERIFIED
+  is a genuine recomputation.
+- **Cross-hardware re-derivation was measured on 2026-09-04 across three CPU
+  environments** (full detail in [`GAPS.md`](GAPS.md) §3). Same archived code,
+  Python 3.12, NumPy 2.4.4, BLAS pinned to one thread. A second Apple Silicon
+  machine (M4 Pro, Accelerate) re-derived the run **bit-for-bit**. An x86-64
+  machine (Ryzen 9 9950X, OpenBLAS) **diverged at training step 9 by 4.4e-16**
+  and finished 8.3e-14 away on the final validation loss, and for every
+  Accelerate/OpenBLAS pair the verifier returned **UNKNOWN in both directions**,
+  which is the designed behaviour. That is the extent of the evidence: three
+  environments, one seed, one config, float64, single-threaded CPU. **GPUs and
+  multithreaded BLAS remain untested.**
 
 That boundary is the contribution, not a failure. See [`GAPS.md`](GAPS.md)
 (§3 especially) and [`TCB.md`](TCB.md).
@@ -152,7 +161,8 @@ and audit records into the **ML-training-provenance** domain. The finding it
 carries into that domain is a boundary, and the boundary is the contribution:
 **re-derivation-based verification needs a matching numeric environment**, so it
 gives strong tamper-evidence and genuine reconstructibility on a deterministic run
-while cross-hardware re-derivation stays honestly UNKNOWN. Same discipline as the
+while cross-hardware re-derivation is UNKNOWN by design across BLAS libraries (measured
+in GAPS.md §3) and untested on GPUs. Same discipline as the
 sibling artifacts (`escrow-budget`, `capctl-iris`, `vsf-cjson`): claim exactly what
 the evidence grade supports, and make the limit lead.
 

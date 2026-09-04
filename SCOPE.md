@@ -74,12 +74,12 @@ Apple Accelerate BLAS — over a handful of runs this session):
   tamper-evidence tag (`tests/determinism_probe.py`).
 
 **NOT PROVEN / out of scope**:
-- **Bit-for-bit reproducibility on different hardware** (a real GPU, a different
-  BLAS such as multithreaded OpenBLAS, a different CPU/arch). Untested — one
-  machine, one BLAS. This is the honest boundary; see GAPS.md. On such hardware
-  a re-derivation mismatch is expected and the verifier returns **UNKNOWN**, not
-  TAMPERED (demonstrated via the "forged loss under foreign env" control, which
-  exercises exactly that branch).
+- **Bit-for-bit reproducibility across BLAS libraries.** Measured 2026-09-04
+  (GAPS.md §3): a second Accelerate machine re-derives bit-for-bit; an x86-64
+  OpenBLAS machine diverges at step 9 by 4.4e-16 and the verifier returns
+  **UNKNOWN** for every cross-BLAS pair, not TAMPERED. Three CPU environments,
+  one seed, one config, single-threaded. **A real GPU and multithreaded BLAS
+  remain untested.**
 - **That the code is correct** or is the intended algorithm. Re-derivation checks
   *reconstructibility of the result from the inputs*, not correctness. A run that
   faithfully re-derives a result produced by buggy code is still VERIFIED.
